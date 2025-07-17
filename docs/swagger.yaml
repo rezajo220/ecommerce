@@ -1,0 +1,353 @@
+basePath: /v1
+definitions:
+  domain.Brand:
+    properties:
+      brand_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.BrandListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/domain.Brand'
+        type: array
+      message:
+        example: Brands retrieved successfully
+        type: string
+    type: object
+  domain.BrandResponse:
+    properties:
+      data:
+        $ref: '#/definitions/domain.Brand'
+      message:
+        example: Brand created successfully
+        type: string
+    type: object
+  domain.CreateBrandRequest:
+    properties:
+      brand_name:
+        type: string
+    required:
+    - brand_name
+    type: object
+  domain.CreateProductRequest:
+    properties:
+      brand_id:
+        type: string
+      price:
+        type: number
+      product_name:
+        type: string
+      qty:
+        minimum: 0
+        type: number
+    required:
+    - brand_id
+    - price
+    - product_name
+    - qty
+    type: object
+  domain.ErrorResponse:
+    properties:
+      error:
+        example: Something went wrong
+        type: string
+    type: object
+  domain.MessageResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+    type: object
+  domain.Product:
+    properties:
+      brand_id:
+        type: string
+      brand_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      price:
+        type: number
+      product_name:
+        type: string
+      qty:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  domain.ProductListResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/domain.Product'
+        type: array
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.ProductListResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/domain.ProductListResponse'
+      message:
+        example: Products retrieved successfully
+        type: string
+    type: object
+  domain.ProductResponse:
+    properties:
+      data:
+        $ref: '#/definitions/domain.Product'
+      message:
+        example: Product created successfully
+        type: string
+    type: object
+  domain.UpdateProductRequest:
+    properties:
+      brand_id:
+        type: string
+      price:
+        type: number
+      product_name:
+        type: string
+      qty:
+        type: number
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  title: E-commerce API
+  version: "1.0"
+paths:
+  /brands:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all brands
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.BrandListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get all brands
+      tags:
+      - brands
+    post:
+      consumes:
+      - application/json
+      description: Create a new brand with the provided information
+      parameters:
+      - description: Brand information
+        in: body
+        name: brand
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateBrandRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.BrandResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Create a new brand
+      tags:
+      - brands
+  /brands/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing brand by ID (only if not used by products)
+      parameters:
+      - description: Brand ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "409":
+          description: Brand is being used by products
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete a brand
+      tags:
+      - brands
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of products with pagination support
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ProductListResponseWrapper'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get products with pagination
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the provided information
+      parameters:
+      - description: Product information
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.ProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing product by ID
+      parameters:
+      - description: Product ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete a product
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product by ID
+      parameters:
+      - description: Product ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated product information
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Update a product
+      tags:
+      - products
+schemes:
+- http
+- https
+swagger: "2.0"
