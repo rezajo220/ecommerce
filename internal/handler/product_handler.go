@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"net/http"
 	"strconv"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	"github.com/rezajo220/ecommerce/internal/domain"
 	services "github.com/rezajo220/ecommerce/internal/service"
 )
@@ -28,22 +29,22 @@ func NewProductHandler(productService services.ProductService) *ProductHandler {
 // @Failure 400 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /products [post]
-func (h *ProductHandler) CreateProduct(c *fiber.Ctx) error {
+func (h *ProductHandler) CreateProduct(c echo.Context) error {
 	var req domain.CreateProductRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid request body",
 		})
 	}
 
-	product, err := h.productService.CreateProduct(c.Context(), &req)
+	product, err := h.productService.CreateProduct(c.Request().Context(), &req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "Product created successfully",
 		"data":    product,
 	})
@@ -60,18 +61,25 @@ func (h *ProductHandler) CreateProduct(c *fiber.Ctx) error {
 // @Success 200 {object} domain.ProductListResponseWrapper
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /products [get]
-func (h *ProductHandler) GetProducts(c *fiber.Ctx) error {
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+func (h *ProductHandler) GetProducts(c echo.Context) error {
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	if page < 1 {
+		page = 1
+	}
 
-	response, err := h.productService.ListProducts(c.Context(), page, limit)
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if limit < 1 {
+		limit = 10
+	}
+
+	response, err := h.productService.ListProducts(c.Request().Context(), page, limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Products retrieved successfully",
 		"data":    response,
 	})
@@ -90,30 +98,30 @@ func (h *ProductHandler) GetProducts(c *fiber.Ctx) error {
 // @Failure 404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /products/{id} [put]
-func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (h *ProductHandler) UpdateProduct(c echo.Context) error {
+	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid product ID",
 		})
 	}
 
 	var req domain.UpdateProductRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid request body",
 		})
 	}
 
-	product, err := h.productService.UpdateProduct(c.Context(), id, &req)
+	product, err := h.productService.UpdateProduct(c.Request().Context(), id, &req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Product updated successfully",
 		"data":    product,
 	})
@@ -131,22 +139,22 @@ func (h *ProductHandler) UpdateProduct(c *fiber.Ctx) error {
 // @Failure 404 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /products/{id} [delete]
-func (h *ProductHandler) DeleteProduct(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (h *ProductHandler) DeleteProduct(c echo.Context) error {
+	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid product ID",
 		})
 	}
 
-	if err := h.productService.DeleteProduct(c.Context(), id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	if err := h.productService.DeleteProduct(c.Request().Context(), id); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Product deleted successfully",
 	})
 }

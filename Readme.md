@@ -1,6 +1,6 @@
 # E-commerce API Service
 
-A RESTful API service for managing products and brands built with Go, Fiber, and PostgreSQL.
+A RESTful API service for managing products and brands built with Go, Echo, and PostgreSQL.
 
 ## 📋 Prerequisites
 
@@ -137,6 +137,12 @@ Once the application is running, access the Swagger UI at:
 http://localhost:8000/swagger/
 ```
 
+### Health Check
+
+```
+GET http://localhost:8000/health
+```
+
 **Response:**
 ```json
 {
@@ -169,7 +175,7 @@ http://localhost:8000/swagger/
 ### Create a Brand
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/brands/ \
+curl -X POST http://localhost:8000/v1/brands/ \
   -H "Content-Type: application/json" \
   -d '{
     "brand_name": "Samsung"
@@ -192,7 +198,7 @@ curl -X POST http://localhost:8000/api/v1/brands/ \
 ### Create a Product
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/products/ \
+curl -X POST http://localhost:8000/v1/products/ \
   -H "Content-Type: application/json" \
   -d '{
     "product_name": "Galaxy S24",
@@ -205,7 +211,7 @@ curl -X POST http://localhost:8000/api/v1/products/ \
 ### Get Products with Pagination
 
 ```bash
-curl "http://localhost:8000/api/v1/products/?page=1&limit=10"
+curl "http://localhost:8000/v1/products/?page=1&limit=10"
 ```
 
 **Response:**
@@ -236,7 +242,7 @@ curl "http://localhost:8000/api/v1/products/?page=1&limit=10"
 ### Update a Product
 
 ```bash
-curl -X PUT http://localhost:8000/api/v1/products/550e8400-e29b-41d4-a716-446655440001 \
+curl -X PUT http://localhost:8000/v1/products/550e8400-e29b-41d4-a716-446655440001 \
   -H "Content-Type: application/json" \
   -d '{
     "product_name": "Galaxy S24 Ultra",
@@ -248,7 +254,7 @@ curl -X PUT http://localhost:8000/api/v1/products/550e8400-e29b-41d4-a716-446655
 ### Delete a Product
 
 ```bash
-curl -X DELETE http://localhost:8000/api/v1/products/550e8400-e29b-41d4-a716-446655440001
+curl -X DELETE http://localhost:8000/v1/products/550e8400-e29b-41d4-a716-446655440001
 ```
 
 ## 📁 Project Structure
@@ -256,7 +262,7 @@ curl -X DELETE http://localhost:8000/api/v1/products/550e8400-e29b-41d4-a716-446
 ```
 ecommerce/
 ├── cmd/                          # Application entrypoint
-│   ├── main.go                   # Main application
+│   ├── main.go                   # Main application (Echo-based)
 │   ├── config.go                 # Configuration management
 │   └── bootstrap.go              # Database connection
 ├── internal/                     # Private application code
@@ -270,7 +276,7 @@ ecommerce/
 │   ├── service/                  # Business logic layer
 │   │   ├── product_service.go
 │   │   └── brand_service.go
-│   └── handler/                  # HTTP handlers
+│   └── handler/                  # HTTP handlers (Echo-based)
 │       ├── product_handler.go
 │       ├── brand_handler.go
 │       └── routes/               # Route definitions
@@ -278,7 +284,7 @@ ecommerce/
 │           └── brand_routes.go
 ├── docs/                         # Generated Swagger documentation
 ├── .env                          # Environment variables
-├── go.mod                        # Go modules
+├── go.mod                        # Go modules (Echo dependencies)
 ├── go.sum                        # Go dependencies
 ├── README.md                     # This file
 ```

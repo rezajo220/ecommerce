@@ -1,15 +1,15 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 	handlers "github.com/rezajo220/ecommerce/internal/handler"
 )
 
-func SetupProductRoutes(app *fiber.App, productHandler *handlers.ProductHandler) {
-	api := app.Group("/v1/products")
+func SetupProductRoutes(e *echo.Echo, productHandler *handlers.ProductHandler) {
+	api := e.Group("/v1/products")
 
-	api.Post("/", productHandler.CreateProduct)
-	api.Get("/", productHandler.GetProducts)
-	api.Put("/:id", productHandler.UpdateProduct)
-	api.Delete("/:id", productHandler.DeleteProduct)
+	api.POST("/", productHandler.CreateProduct)
+	api.GET("/", productHandler.GetProducts)
+	api.PUT("/:id", productHandler.UpdateProduct)
+	api.DELETE("/:id", productHandler.DeleteProduct)
 }

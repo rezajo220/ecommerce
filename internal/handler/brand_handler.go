@@ -1,8 +1,10 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	"github.com/rezajo220/ecommerce/internal/domain"
 	services "github.com/rezajo220/ecommerce/internal/service"
 )
@@ -26,22 +28,22 @@ func NewBrandHandler(brandService services.BrandService) *BrandHandler {
 // @Failure 400 {object} domain.ErrorResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /brands [post]
-func (h *BrandHandler) CreateBrand(c *fiber.Ctx) error {
+func (h *BrandHandler) CreateBrand(c echo.Context) error {
 	var req domain.CreateBrandRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid request body",
 		})
 	}
 
-	brand, err := h.brandService.CreateBrand(c.Context(), &req)
+	brand, err := h.brandService.CreateBrand(c.Request().Context(), &req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "Brand created successfully",
 		"data":    brand,
 	})
@@ -56,15 +58,15 @@ func (h *BrandHandler) CreateBrand(c *fiber.Ctx) error {
 // @Success 200 {object} domain.BrandListResponse
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /brands [get]
-func (h *BrandHandler) GetBrands(c *fiber.Ctx) error {
-	brands, err := h.brandService.ListBrands(c.Context())
+func (h *BrandHandler) GetBrands(c echo.Context) error {
+	brands, err := h.brandService.ListBrands(c.Request().Context())
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Brands retrieved successfully",
 		"data":    brands,
 	})
@@ -83,22 +85,22 @@ func (h *BrandHandler) GetBrands(c *fiber.Ctx) error {
 // @Failure 409 {object} domain.ErrorResponse "Brand is being used by products"
 // @Failure 500 {object} domain.ErrorResponse
 // @Router /brands/{id} [delete]
-func (h *BrandHandler) DeleteBrand(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (h *BrandHandler) DeleteBrand(c echo.Context) error {
+	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid brand ID",
 		})
 	}
 
-	if err := h.brandService.DeleteBrand(c.Context(), id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	if err := h.brandService.DeleteBrand(c.Request().Context(), id); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": err.Error(),
 		})
 	}
 
-	return c.JSON(fiber.Map{
+	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Brand deleted successfully",
 	})
 }
