@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,23 +104,14 @@ func (r *productRepository) Update(ctx context.Context, id uuid.UUID, req *domai
 	setParts = append(setParts, fmt.Sprintf("updated_at = $%d", argIndex))
 	args = append(args, time.Now())
 	argIndex++
+
 	args = append(args, id)
-
+	setClause := strings.Join(setParts, ", ")
 	query := fmt.Sprintf(`
-		UPDATE products 
-		SET %s
-		WHERE id = $%d
-		RETURNING id, product_name, price, qty, brand_id, created_at, updated_at`,
-		fmt.Sprintf("%s", setParts[0]), argIndex)
-
-	for i := 1; i < len(setParts); i++ {
-		query = fmt.Sprintf(`
-		UPDATE products 
-		SET %s
-		WHERE id = $%d
-		RETURNING id, product_name, price, qty, brand_id, created_at, updated_at`,
-			fmt.Sprintf("%s, %s", setParts[0], setParts[i]), argIndex)
-	}
+    UPDATE products
+    SET %s
+    WHERE id = $%d
+    RETURNING id, product_name, price, qty, brand_id, created_at, updated_at`, setClause, argIndex)
 
 	var product domain.Product
 	err = r.db.QueryRowxContext(ctx, query, args...).StructScan(&product)

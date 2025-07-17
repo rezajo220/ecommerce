@@ -94,14 +94,6 @@ DB_SSL_MODE=disable
        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
        FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE RESTRICT
    );
-   
-   -- Insert sample brands
-   INSERT INTO brands (brand_name) VALUES 
-   ('Samsung'),
-   ('Apple'),
-   ('Xiaomi'),
-   ('Oppo'),
-   ('Vivo');
    ```
 
 ## 🚀 Running the Application
@@ -323,3 +315,29 @@ listen tcp :8000: bind: address already in use
 1. Ensure Swagger dependencies are installed
 2. Generate docs: `swag init -g cmd/main.go -o docs/`
 3. Restart the application
+
+## Essay
+
+### 1. Dependency injection adalah ketergantungan sebuah object yang diberikan dari luar dan pointer adalah referensi alamat dari suatu nilai
+```
+type Service struct{}
+
+type Controller struct {
+    service *Service
+}
+
+func NewController(s *Service) *Controller {
+    return &Controller{service: s}
+}
+```
+#### NewController menggunakan dependency injection karena dependensi Service diberikan dari luar, bukan dibuat di dalam Controller. Parameter *Service adalah pointer, sehingga Controller bekerja dengan instance yang sama, bukan salinan
+
+### 2. Role Base Access Control adalah system pengaturan hak akses (permissions) berdasarkan peran (role) yang dimiliki oleh user
+
+### 3. Cara menangani issue memory leak di golang
+**Solution:** 
+1. Hapus referensi yang tidak digunakan
+2. Tutup channel yang tidak dipakai
+3. Gunakan Profiling tools
+
+### 4. Tidak
